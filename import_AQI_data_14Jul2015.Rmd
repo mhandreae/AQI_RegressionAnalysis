@@ -1,0 +1,206 @@
+---
+title: "Import AQI data"
+author: "Michael Andreae"
+date: "Friday, June 19, 2015"
+output: pdf_document
+---
+
+#Insurance status predicts antiemetic use 
+We investigate the Hypothesis that insurance status predicets antiemetic use the population in the Public Use File of the Anestehsia Quality Institute with electronic anesthesia records recording antiemetic use.
+
+
+
+```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
+library(knitr) # required to set options in Markdown R
+```
+
+
+
+```{r, global_options, echo=FALSE}
+
+# set the directory to the project directory
+setwd("C:/Users/Micheal/Dropbox/Professional/AQI/AQI_RegressionAnalysis")
+
+# set options
+opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
+               echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+# Load original dataset and save as Rdata 
+
+```{r, eval=FALSE, echo=TRUE}
+# run only once
+PUF_Q4_2013_Antimetic <- read.csv("Analysis/Data/PUF_Q4_2013_Antimetic.csv")
+save(PUF_Q4_2013_Antimetic, file="Analysis/Data/PUF_Q4_2013_Antimetic.Rdata")
+```
+
+# Load Rdata AQI raw dataset
+
+```{r}
+rm(list = ls())
+load("Analysis/Data/PUF_Q4_2013_Antimetic.Rdata")
+```
+
+# Inspect variables
+
+```{r, eval=FALSE, results='hide'}
+# name the variable under inspection as myvariable
+
+attach(PUF_Q4_2013_Antimetic)
+myvariable <- "patient_age"
+myvariable2 <- "procedure_start_time"
+unique( get(myvariable) )
+class( get(myvariable) )
+hist( get(myvariable) )
+anyNA(get(myvariable))
+table(get(myvariable))
+range(get(myvariable))
+
+patient_age[patient_age==-1] <- NA
+```
+
+## Predictor insurance status
+
+
+```{r}
+PUF_Q4_2013_Antimetic$Payment[PUF_Q4_2013_Antimetic$Payment == ""] <- NA
+PUF_Q4_2013_Antimetic$Payment <- droplevels(PUF_Q4_2013_Antimetic$Payment)
+levels(PUF_Q4_2013_Antimetic$Payment)[1] <- "Commercial"
+anyNA(PUF_Q4_2013_Antimetic$Payment)
+```
+
+The predictor insurance status (*Payment*) is coded in `r length(levels(PUF_Q4_2013_Antimetic$Payment))` levels as `r levels(PUF_Q4_2013_Antimetic$Payment)`, after we removed `r sum(is.na(PUF_Q4_2013_Antimetic$Payment))` cases without insurance information, (orginally coded as ""), these are removed from the dataset.
+
+## Outcome variable antiemetic administration
+
+### Ondansetron
+
+```{r}
+PUF_Q4_2013_Antimetic$ondansetron <- 
+  as.factor(PUF_Q4_2013_Antimetic$Antiemetics_ondansetron)
+levels(PUF_Q4_2013_Antimetic$ondansetron) <- c("not admin", "admin")
+```
+
+### Dexamethason
+
+```{r}
+PUF_Q4_2013_Antimetic$dexamethason <- 
+  as.factor(PUF_Q4_2013_Antimetic$Antiemetics_dexamethason)
+levels(PUF_Q4_2013_Antimetic$dexamethason) <- c("not admin", "admin")
+```
+
+### Droperidol
+
+```{r}
+PUF_Q4_2013_Antimetic$droperidol <- 
+  as.factor(PUF_Q4_2013_Antimetic$Antiemetics_droperidol)
+levels(PUF_Q4_2013_Antimetic$droperidol) <- c("not admin", "admin")
+```
+
+### Ondansetron or Dexamethason
+
+```{r}
+ondan_dex_either <- 
+  as.factor((PUF_Q4_2013_Antimetic$Antiemetics_ondansetron == 1) | (PUF_Q4_2013_Antimetic$Antiemetics_dexamethason ==1))
+levels(ondan_dex_either) <- c("neither", "either")
+table(ondan_dex_either)
+#table(ondan_dex_either,ondansetron)
+
+head(ondan_dex_either)
+head(PUF_Q4_2013_Antimetic$Antiemetics_dexamethason == 1)
+```
+
+Both antiemetics ondansetron **OR** dexamethason were sometimes administered together
+`r table(ondan_dex_either)` 
+
+This is coded in *ondan_dex_either*
+
+## Potential confounders and other variables
+
+### practice ID versus facility ID
+
+```{r}
+attach(PUF_Q4_2013_Antimetic)
+kable(table(facilityID,practiceID))
+```
+
+The table of facility ID versus practice ID suggests that five practices have only one facility ID and one practice (=5013437) has three (sub) facilities. We will simplify by using practice ID, which has no NA.
+
+
+### case_duration_minutes
+
+Case duration in minutes (*case_duration_minutes*) is an integer and has `r sum(case_duration_minutes==-1)` missing values coded as -1, which we recoded as NA and removed from the dataset.
+
+```{r, echo=TRUE}
+PUF_Q4_2013_Antimetic$case_duration_minutes[PUF_Q4_2013_Antimetic$case_duration_minutes==-1] <- NA
+```
+
+
+### patient age
+
+Patient age (*patient_age*) is an integer with a distribution below and has `r sum(patient_age==-1)` missing values coded as -1, which we recoded as NA and removed from the dataset
+
+```{r, echo=TRUE}
+PUF_Q4_2013_Antimetic$patient_age[PUF_Q4_2013_Antimetic$patient_age==-1] <- NA
+
+hist(PUF_Q4_2013_Antimetic$patient_age, 
+     main = "Histogram of Age Distribution",
+     xlab = "Age in years")
+```
+
+
+### patient_age_group
+
+```{r, echo=TRUE}
+levels(PUF_Q4_2013_Antimetic$patient_age_group)[2] <- "1-18"
+levels(PUF_Q4_2013_Antimetic$patient_age_group)[1] <- NA
+PUF_Q4_2013_Antimetic$patient_age_group <- 
+  relevel(PUF_Q4_2013_Antimetic$patient_age_group, "Under 1")
+```
+
+Patient age group (*patient_age_group*) is a factor with `r length(levels(PUF_Q4_2013_Antimetic$patient_age_group))` levels: `r levels(PUF_Q4_2013_Antimetic$patient_age_group)`; it has `r sum(is.na(PUF_Q4_2013_Antimetic$patient_age_group))` missing values initially coded as -1, which we recoded as NA and removed from the dataset. (We corrected the miscoding from "18-Jan"" to "1-18").
+
+### patient_sex
+
+```{r}
+PUF_Q4_2013_Antimetic$patient_sex <- 
+  as.factor(PUF_Q4_2013_Antimetic$patient_sex)
+
+levels(PUF_Q4_2013_Antimetic$patient_sex)[1] <- NA
+levels(PUF_Q4_2013_Antimetic$patient_sex)[1] <- "female"
+levels(PUF_Q4_2013_Antimetic$patient_sex)[2] <- "male"
+```
+
+Patient gender (*patient_sex*) is recoded as factor with the two levels `r levels(PUF_Q4_2013_Antimetic$patient_sex)` and `r sum(is.na(PUF_Q4_2013_Antimetic$patient_sex))` NAs, which are removed from the dataset.
+
+### in_or_out_patient
+
+```{r}
+PUF_Q4_2013_Antimetic$in_or_out_patient <- 
+  as.factor(PUF_Q4_2013_Antimetic$in_or_out_patient)
+
+levels(PUF_Q4_2013_Antimetic$in_or_out_patient)[1] <- NA
+levels(PUF_Q4_2013_Antimetic$in_or_out_patient)[1] <- "Outpatient"
+levels(PUF_Q4_2013_Antimetic$in_or_out_patient)[2] <- "Inpatient"
+```
+
+
+in- or outpatient status (*in_or_out_patient*) is recoded as a factor with the two levels `r levels(PUF_Q4_2013_Antimetic$in_or_out_patient)` and `r sum(is.na(PUF_Q4_2013_Antimetic$in_or_out_patient))` NAs, which are too numerous to include this variable in the dataset.
+
+# Clean AQI_4_14 dataframe saved as Rdata
+
+```{r}
+
+attach(PUF_Q4_2013_Antimetic)
+myAQI_4_14 <- data.frame(Payment, 
+                         ondansetron,
+                         dexamethason,
+                         droperidol,
+                         ondan_dex_either,
+                         practiceID=as.factor(practiceID), 
+                         case_duration_minutes, 
+                         patient_age, patient_age_group, 
+                         patient_sex)
+myAQI_4_14 <- myAQI_4_14[complete.cases(myAQI_4_14),]
+save (myAQI_4_14, file="Analysis/Data/myAQI_4_14.Rdata")
+str(myAQI_4_14)
