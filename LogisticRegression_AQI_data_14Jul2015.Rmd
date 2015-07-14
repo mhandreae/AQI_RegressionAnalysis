@@ -1,0 +1,65 @@
+---
+title: "Logistic regression AQI data"
+author: "Michael Andreae"
+date: "July, 14, 2015"
+output: pdf_document
+---
+
+# Insurance status predicts antiemetic use 
+We investigate the Hypothesis that insurance status predicets antiemetic use the population in the Public Use File of the Anestehsia Quality Institute with electronic anesthesia records recording antiemetic use.
+
+
+
+```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
+library(knitr) # required to set options in Markdown R
+```
+
+
+
+```{r, global_options, echo=FALSE}
+
+# set the directory to the project directory
+setwd("C:/Users/Micheal/Dropbox/Professional/AQI/AQI_RegressionAnalysis")
+
+# set options
+opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
+               echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+## Load cleaned dataset *myAQI_4_14.Rdata* 
+ 
+we load the cleaned dataset *myAQI_4_14.Rdata*, which we generated in *import_AQI_14Jul2015.Rmd*   
+
+
+```{r, echo=TRUE}
+rm(list = ls())
+load("Analysis/Data/myAQI_4_14.Rdata")
+str(myAQI_4_14)
+```
+
+## Logistic Regression
+
+### Logistic Model 1
+
+We fit a logistic regression model with the a logit link.
+
+
+```{r, echo=TRUE}
+formula <- ondansetron ~ Payment +patient_age +patient_sex +
+  practiceID + case_duration_minutes 
+fit_logistic <- glm(formula, 
+                   family = binomial(link = "logit"), data = myAQI_4_14)
+```
+
+Controlling for age, sex, facilty and case duration, antiemetic administration is strongly associated with insurance status as a marker of SES.
+
+```{r, echo=FALSE}
+summary(fit_logistic) # display results
+#confint(fit_logistic) # 95% CI for the coefficients
+exp(coef(fit_logistic)) # exponentiated coefficients
+#exp(confint(fit_logistic)) # 95% CI for exponentiated coefficients
+#predict(fit_logistic, type="response") # predicted values
+#residuals(fit_logistic, type="deviance") # residuals
+```
+
+
