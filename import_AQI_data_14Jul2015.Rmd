@@ -188,7 +188,7 @@ levels(PUF_Q4_2013$in_or_out_patient)[2] <- "Inpatient"
 ```
 
 
-in- or outpatient status (*in_or_out_patient*) is recoded as a factor with the two levels `r levels(PUF_Q4_2013$in_or_out_patient)` and `r sum(is.na(PUF_Q4_2013$in_or_out_patient))` NAs, which are too numerous to include this variable in the dataset.
+in- or outpatient status (*in_or_out_patient*) is recoded as a factor with the two levels `r levels(PUF_Q4_2013$in_or_out_patient)` and `r sum(is.na(PUF_Q4_2013$in_or_out_patient))` NAs, which are too numerous to exclude.
 
 ### surgical_cpt code
 
@@ -361,7 +361,7 @@ prov1_AQI_4_14 <- data.frame(ondansetron,
                          Payment, 
                          patient_age, patient_age_group, 
                          patient_sex,
-                         asaps_imputed,
+                         asaps,
                          case_duration_minutes,
                          primary_anesthesia_type,
                          prov1,
