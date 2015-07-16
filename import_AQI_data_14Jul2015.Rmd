@@ -201,7 +201,9 @@ levels(PUF_Q4_2013$surgical_cpt)[1] <- NA
 missing <- sum(is.na(PUF_Q4_2013$surgical_cpt))
 ```
 
-We considered to control with a random effect for *surgical_ctp* code but `r missing` NAs are too numerous.
+We considered to control with a random effect for *surgical_ctp* code but `r missing` cases do not have a *surgical_ctp* code defined, which are too many to exclude.
+
+
 
 # Save cleaned dataset
 *AQI_4_14.Rdata* saved as a clean dataframe
