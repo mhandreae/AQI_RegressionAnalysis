@@ -203,6 +203,19 @@ missing <- sum(is.na(PUF_Q4_2013$surgical_cpt))
 
 We considered to control with a random effect for *surgical_ctp* code but `r missing` cases do not have a *surgical_ctp* code defined, which are too many to exclude.
 
+### combined_cpt code
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$combined_cpt <- 
+  as.factor(PUF_Q4_2013$combined_cpt)
+levels(PUF_Q4_2013$combined_cpt)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$combined_cpt))
+```
+
+We considered to control with a random effect for *combined_cpt* code but `r missing` cases do not have a *combined_cpt* code defined, which are too many to exclude.
+
 ### reported_anesthesia_code
 
 ```{r}
@@ -265,6 +278,16 @@ missing <- sum(is.na(PUF_Q4_2013$case_type))
 
 It would make sense to try to control for *case_type*, (which indicates if the case was `r levels(PUF_Q4_2013$case_type)` ..., but `r missing` of the remaining cases do not have a *case_type* code defined, which obviously are too many to exclude.
 
+### asaps_imputed
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$asaps_imputed <- 
+  as.factor(PUF_Q4_2013$asaps_imputed)
+levels(PUF_Q4_2013$asaps_imputed)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$asaps_imputed))
+```
 
 ### asaps
 
@@ -275,30 +298,35 @@ PUF_Q4_2013$asaps <-
   as.factor(PUF_Q4_2013$asaps)
 levels(PUF_Q4_2013$asaps)[1] <- NA
 missing <- sum(is.na(PUF_Q4_2013$asaps))
+PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$asaps),]
 ```
 
-### asaps_imputed
+It would make sense to try to control for *asaps* or *asaps_imputed*, (ASA Status, which indicates how sick a patient was, and only `r missing` of the remaining cases do not have an ASA status recorded; so we exclude them, leaving us with `r dim(PUF_Q4_2013)[1]` unique cases with also *asaps* as a predictor.
+
+### prov1
 
 ```{r}
-# load("Analysis/Data/PUF_Q4_2013.Rdata")
 
-PUF_Q4_2013$asaps_imputed <- 
-  as.factor(PUF_Q4_2013$asaps_imputed)
-levels(PUF_Q4_2013$asaps_imputed)[1] <- NA
-missing <- sum(is.na(PUF_Q4_2013$asaps_imputed))
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$asaps_imputed),]
-
+PUF_Q4_2013$prov1 <- 
+  as.factor(PUF_Q4_2013$prov1)
+levels(PUF_Q4_2013$prov1)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$prov1))
 ```
 
-It would make sense to try to control for *asaps* or *asaps_imputed*, (ASA Status, which indicates how sick a patient was, and only `r missing` of the remaining cases do not have an ASA status recorded; so we exclude them, leaving us with `r dim(PUF_Q4_2013)[1]` unique cases with also *asaps_imputed* as a predictor.
 
-# Save cleaned dataset
-*AQI_4_14.Rdata* saved as a clean dataframe
+It would be great to control for individual provider behavior, to show variability among providers in their propensity to admister antiemetics contingent on insurance status. There are `r length(levels(PUF_Q4_2013$prov1))` different *prov1* levels, I believe they are coding for individual providers. `r missing` of the remaining cases do not have the *prov1*  recorded; if we exclude them, it leaves us with `r dim(PUF_Q4_2013[complete.cases(PUF_Q4_2013$prov1),])[1]` unique cases with provider coded as *prov1* as predictor.
+
+
+# Save cleaned datasets
+
+## Larger dataset **without** provider information in *fullAQI_4_14*
+
+a clean dataframe without provider info but more unique cases is saved as *fullAQI_4_14.Rdata* 
 
 ```{r}
 
 attach(PUF_Q4_2013)
-myAQI_4_14 <- data.frame(ondansetron,
+fullAQI_4_14 <- data.frame(ondansetron,
                          dexamethason,
                          droperidol,
                          ondan_dex_either,
@@ -311,8 +339,36 @@ myAQI_4_14 <- data.frame(ondansetron,
                          practiceID=as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
-# myAQI_4_14 <- myAQI_4_14[complete.cases(myAQI_4_14),]
 
-save (myAQI_4_14, file="Analysis/Data/myAQI_4_14.Rdata")
-str(myAQI_4_14)
+save (fullAQI_4_14, file="Analysis/Data/fullAQI_4_14.Rdata")
+str(fullAQI_4_14)
+```
+
+## Smaller dataset **with** provider information in *prov1_AQI_4_14*
+
+a more limited dataset with the individual provider as predictor is saved (after removing cases with *prov1* NA) in *prov1_AQI_4_14.Rdata*
+
+
+```{r}
+# Remove cases with *prov* NA
+PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$prov1),]
+
+attach(PUF_Q4_2013)
+prov1_AQI_4_14 <- data.frame(ondansetron,
+                         dexamethason,
+                         droperidol,
+                         ondan_dex_either,
+                         Payment, 
+                         patient_age, patient_age_group, 
+                         patient_sex,
+                         asaps_imputed,
+                         case_duration_minutes,
+                         primary_anesthesia_type,
+                         prov1,
+                         practiceID=as.factor(practiceID))
+
+# all NA are already removed in the previous chunks
+
+save (prov1_AQI_4_14, file="Analysis/Data/prov1_AQI_4_14.Rdata")
+str(prov1_AQI_4_14)
 ```
