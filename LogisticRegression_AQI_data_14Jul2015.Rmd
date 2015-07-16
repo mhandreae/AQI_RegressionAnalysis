@@ -45,7 +45,7 @@ We fit a logistic regression model with the a logit link.
 
 
 ```{r, echo=TRUE}
-formula <- ond ~ pay +age +sex +ASA +anes_type +duration +practice  
+formula <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice  
 
 fit_logistic <- glm(formula, 
                    family = binomial(link = "logit"), 
