@@ -231,9 +231,66 @@ levels(PUF_Q4_2013$primary_anesthesia_type) <- c("General",
                                                 "Sedation", "Local" , 
                                                 "Other")
 missing <- sum(is.na(PUF_Q4_2013$primary_anesthesia_type))
+PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$primary_anesthesia_type),]
 ```
 
-*primary_anesthesia-type* is recoded as a factor with  `r length(levels(PUF_Q4_2013$primary_anesthesia_type))` levels [`r levels(PUF_Q4_2013$primary_anesthesia_type)`]. We considered to control with a fixed or a effect for *primary_anesthesia_type* code but `r missing` cases do not have a *primary_anesthesia_type* code defined, which are too many to exclude.
+*primary_anesthesia-type* is recoded as a factor with  `r length(levels(PUF_Q4_2013$primary_anesthesia_type))` levels [`r levels(PUF_Q4_2013$primary_anesthesia_type)`]. We considered to control with a fixed or a effect for *primary_anesthesia_type* code but `r missing` cases do not have a *primary_anesthesia_type* code defined, which may be too many to exclude.
+
+We did exclude NA leaving us with `r dim(PUF_Q4_2013)[1]` unique cases.
+
+### procedure_status
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$procedure_status <- 
+  as.factor(PUF_Q4_2013$procedure_status)
+levels(PUF_Q4_2013$procedure_status)[1] <- NA
+levels(PUF_Q4_2013$procedure_status) <- c("Emergency", "Elective")
+missing <- sum(is.na(PUF_Q4_2013$procedure_status))
+```
+
+It would make sense to try to control for *procedure_status*, (which indicates if the case was `r levels(PUF_Q4_2013$procedure_status) [1]` or `r levels(PUF_Q4_2013$procedure_status)[2]`); but `r missing` of the remaining cases do not have a *procedure_status* code defined, which obviously are too many to exclude.
+
+### case_type
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$case_type <- 
+  as.factor(PUF_Q4_2013$case_type)
+levels(PUF_Q4_2013$case_type)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$case_type))
+```
+
+It would make sense to try to control for *case_type*, (which indicates if the case was `r levels(PUF_Q4_2013$case_type)` ..., but `r missing` of the remaining cases do not have a *case_type* code defined, which obviously are too many to exclude.
+
+
+### asaps
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$asaps <- 
+  as.factor(PUF_Q4_2013$asaps)
+levels(PUF_Q4_2013$asaps)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$asaps))
+```
+
+### asaps_imputed
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$asaps_imputed <- 
+  as.factor(PUF_Q4_2013$asaps_imputed)
+levels(PUF_Q4_2013$asaps_imputed)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$asaps_imputed))
+PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$asaps_imputed),]
+
+```
+
+It would make sense to try to control for *asaps* or *asaps_imputed*, (ASA Status, which indicates how sick a patient was, and only `r missing` of the remaining cases do not have an ASA status recorded; so we exclude them, leaving us with `r dim(PUF_Q4_2013)[1]` unique cases with also *asaps_imputed* as a predictor.
 
 # Save cleaned dataset
 *AQI_4_14.Rdata* saved as a clean dataframe
@@ -241,15 +298,17 @@ missing <- sum(is.na(PUF_Q4_2013$primary_anesthesia_type))
 ```{r}
 
 attach(PUF_Q4_2013)
-myAQI_4_14 <- data.frame(Payment, 
-                         ondansetron,
+myAQI_4_14 <- data.frame(ondansetron,
                          dexamethason,
                          droperidol,
                          ondan_dex_either,
-                         practiceID=as.factor(practiceID), 
-                         case_duration_minutes, 
+                         Payment, 
                          patient_age, patient_age_group, 
-                         patient_sex)
+                         patient_sex,
+                         asaps_imputed,
+                         case_duration_minutes,
+                         primary_anesthesia_type,
+                         practiceID=as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
 # myAQI_4_14 <- myAQI_4_14[complete.cases(myAQI_4_14),]
