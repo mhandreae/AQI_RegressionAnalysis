@@ -157,8 +157,9 @@ Patient age (*patient_age*) is an integer with a distribution above and has `r m
 ```{r, echo=TRUE}
 levels(PUF_Q4_2013$patient_age_group)[2] <- "1-18"
 levels(PUF_Q4_2013$patient_age_group)[1] <- NA
+PUF_Q4_2013$patient_age_group <- factor(PUF_Q4_2013$patient_age_group,
+                levels(PUF_Q4_2013$patient_age_group)[c(2:6,1)])
 missing <- sum(is.na(PUF_Q4_2013$patient_age_group))
-which(is.na(PUF_Q4_2013$patient_age_group))
 PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$patient_age_group),]
 
 ```
