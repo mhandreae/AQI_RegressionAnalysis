@@ -28,7 +28,7 @@ opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
 
 ## Load cleaned dataset *myAQI_4_14.Rdata* 
  
-we load the cleaned dataset *myAQI_4_14.Rdata*, which we generated in *import_AQI_14Jul2015.Rmd*   
+we load the cleaned larger dataset without provider information *fullAQI_4_14.Rdata*, which we generated in *import_AQI_14Jul2015.Rmd*   
 
 
 ```{r, echo=TRUE}
@@ -45,8 +45,8 @@ We fit a logistic regression model with the a logit link.
 
 
 ```{r, echo=TRUE}
-formula <- ond ~ pay +age_group +
-  sex +ASA +anes_type +duration +practice  
+formula <- ond ~ pay +age +sex +ASA +anes_type +duration +practice  
+
 fit_logistic <- glm(formula, 
                    family = binomial(link = "logit"), 
                    data = fullAQI_4_14)
@@ -55,10 +55,11 @@ fit_logistic <- glm(formula,
 Controlling for age, sex, facilty and case duration, antiemetic administration is strongly associated with insurance status as a marker of SES.
 
 ```{r, echo=FALSE}
-#summary(fit_logistic) # display results
 p_values <- summary.glm((fit_logistic))$coefficient[,4]
 OR <- exp(coef(fit_logistic)) # exponentiated coefficients
 kable(data.frame(OR, p_values), digits = 3)
+
+#summary(fit_logistic) # display results
 #confint(fit_logistic) # 95% CI for the coefficients
 #exp(confint(fit_logistic)) # 95% CI for exponentiated coefficients
 #predict(fit_logistic, type="response") # predicted values
