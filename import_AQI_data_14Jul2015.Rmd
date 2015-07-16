@@ -333,7 +333,7 @@ fullAQI_4_14 <- data.frame(ondansetron,
                          Payment, 
                          patient_age, patient_age_group, 
                          patient_sex,
-                         asaps_imputed,
+                         asaps,
                          case_duration_minutes,
                          primary_anesthesia_type,
                          practiceID=as.factor(practiceID))
