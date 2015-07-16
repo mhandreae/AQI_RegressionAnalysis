@@ -238,9 +238,9 @@ PUF_Q4_2013$primary_anesthesia_type <-
   as.factor(PUF_Q4_2013$primary_anesthesia_type)
 levels(PUF_Q4_2013$primary_anesthesia_type)[1] <- NA
 levels(PUF_Q4_2013$primary_anesthesia_type) <- c("General", 
-                                                "Epidural/Spinal", 
+                                                "Neuroaxial", 
                                                 "Regional", 
-                                                "Monitored Anesthesia Care", 
+                                                "MAC", 
                                                 "Sedation", "Local" , 
                                                 "Other")
 missing <- sum(is.na(PUF_Q4_2013$primary_anesthesia_type))
@@ -326,18 +326,18 @@ a clean dataframe without provider info but more unique cases is saved as *fullA
 ```{r}
 
 attach(PUF_Q4_2013)
-fullAQI_4_14 <- data.frame(ondansetron,
-                         dexamethason,
-                         droperidol,
-                         ondan_dex_either,
+fullAQI_4_14 <- data.frame(ond= ondansetron,
+                         dex= dexamethason,
+                         drop= droperidol,
+                         any = ondan_dex_either,
                          pay = Payment, 
                          age = patient_age, 
                          age_group = patient_age_group, 
                          sex = patient_sex,
                          ASA = asaps,
-                         case_duration = case_duration_minutes,
+                         duration = case_duration_minutes,
                          anes_type = primary_anesthesia_type,
-                         practice = practiceID=as.factor(practiceID))
+                         practice = as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
 
@@ -355,19 +355,19 @@ a more limited dataset with the individual provider as predictor is saved (after
 PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$prov1),]
 
 attach(PUF_Q4_2013)
-prov1_AQI_4_14 <- data.frame(ondansetron,
-                         dexamethason,
-                         droperidol,
-                         ondan_dex_either,
+prov1_AQI_4_14 <- data.frame(ond= ondansetron,
+                         dex= dexamethason,
+                         drop= droperidol,
+                         any = ondan_dex_either,
                          pay = Payment, 
                          age = patient_age, 
                          age_group = patient_age_group, 
                          sex = patient_sex,
                          ASA = asaps,
-                         case_duration = case_duration_minutes,
+                         duration = case_duration_minutes,
                          anes_type = primary_anesthesia_type,
-                         provider = prov1
-                         practice = practiceID=as.factor(practiceID))
+                         provider = prov1,
+                         practice = as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
 
