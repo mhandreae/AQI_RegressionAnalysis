@@ -33,8 +33,8 @@ we load the cleaned dataset *myAQI_4_14.Rdata*, which we generated in *import_AQ
 
 ```{r, echo=TRUE}
 rm(list = ls())
-load("Analysis/Data/myAQI_4_14.Rdata")
-str(myAQI_4_14)
+load("Analysis/Data/fullAQI_4_14.Rdata")
+str(fullAQI_4_14)
 ```
 
 ## Logistic Regression
@@ -45,10 +45,10 @@ We fit a logistic regression model with the a logit link.
 
 
 ```{r, echo=TRUE}
-formula <- ondansetron ~ Payment +patient_age +patient_sex +
-  practiceID + case_duration_minutes 
+formula <- ond ~ pay +age +sex +ASA +anes_type +duration +practice  
 fit_logistic <- glm(formula, 
-                   family = binomial(link = "logit"), data = myAQI_4_14)
+                   family = binomial(link = "logit"), 
+                   data = fullAQI_4_14)
 ```
 
 Controlling for age, sex, facilty and case duration, antiemetic administration is strongly associated with insurance status as a marker of SES.
