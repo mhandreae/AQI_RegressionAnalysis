@@ -122,6 +122,12 @@ kable(table(facilityID,practiceID))
 
 The table of facility ID versus practice ID suggests that five practices have only one facility ID and one practice (=5013437) has three (sub) facilities. We will simplify by using practice ID, which has no NA.
 
+```{r}
+PUF_Q4_2013$practice <- as.factor(PUF_Q4_2013$practiceID)
+levels(PUF_Q4_2013$practice) <- c("A", "B", "C", "D")
+```
+
+We recode the practices to A through D to prevent reidentification.
 
 ### case_duration_minutes
 
@@ -337,7 +343,7 @@ fullAQI_4_14 <- data.frame(ond= ondansetron,
                          ASA = asaps,
                          duration = case_duration_minutes,
                          anes_type = primary_anesthesia_type,
-                         practice = as.factor(practiceID))
+                         practice = practice)
 
 # all NA are already removed in the previous chunks
 
@@ -367,7 +373,7 @@ prov1_AQI_4_14 <- data.frame(ond= ondansetron,
                          duration = case_duration_minutes,
                          anes_type = primary_anesthesia_type,
                          provider = prov1,
-                         practice = as.factor(practiceID))
+                         practice = practice)
 
 # all NA are already removed in the previous chunks
 
