@@ -190,6 +190,19 @@ levels(PUF_Q4_2013$in_or_out_patient)[2] <- "Inpatient"
 
 in- or outpatient status (*in_or_out_patient*) is recoded as a factor with the two levels `r levels(PUF_Q4_2013$in_or_out_patient)` and `r sum(is.na(PUF_Q4_2013$in_or_out_patient))` NAs, which are too numerous to include this variable in the dataset.
 
+## surgical_cpt code
+
+```{r}
+# load("Analysis/Data/PUF_Q4_2013.Rdata")
+
+PUF_Q4_2013$surgical_cpt <- 
+  as.factor(PUF_Q4_2013$surgical_cpt)
+levels(PUF_Q4_2013$surgical_cpt)[1] <- NA
+missing <- sum(is.na(PUF_Q4_2013$surgical_cpt))
+```
+
+We considered to control with a random effect for *surgical_ctp* code but `r missing` NAs are too numerous.
+
 # Save cleaned dataset
 *AQI_4_14.Rdata* saved as a clean dataframe
 
