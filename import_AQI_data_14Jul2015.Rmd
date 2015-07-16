@@ -330,13 +330,14 @@ fullAQI_4_14 <- data.frame(ondansetron,
                          dexamethason,
                          droperidol,
                          ondan_dex_either,
-                         Payment, 
-                         patient_age, patient_age_group, 
-                         patient_sex,
-                         asaps,
-                         case_duration_minutes,
-                         primary_anesthesia_type,
-                         practiceID=as.factor(practiceID))
+                         pay = Payment, 
+                         age = patient_age, 
+                         age_group = patient_age_group, 
+                         sex = patient_sex,
+                         ASA = asaps,
+                         case_duration = case_duration_minutes,
+                         anes_type = primary_anesthesia_type,
+                         practice = practiceID=as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
 
@@ -358,14 +359,15 @@ prov1_AQI_4_14 <- data.frame(ondansetron,
                          dexamethason,
                          droperidol,
                          ondan_dex_either,
-                         Payment, 
-                         patient_age, patient_age_group, 
-                         patient_sex,
-                         asaps,
-                         case_duration_minutes,
-                         primary_anesthesia_type,
-                         prov1,
-                         practiceID=as.factor(practiceID))
+                         pay = Payment, 
+                         age = patient_age, 
+                         age_group = patient_age_group, 
+                         sex = patient_sex,
+                         ASA = asaps,
+                         case_duration = case_duration_minutes,
+                         anes_type = primary_anesthesia_type,
+                         provider = prov1
+                         practice = practiceID=as.factor(practiceID))
 
 # all NA are already removed in the previous chunks
 
