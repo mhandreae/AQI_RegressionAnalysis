@@ -1,0 +1,111 @@
+---
+title: "Logistic regression AQI data"
+author: "Michael Andreae"
+date: "July, 14, 2015"
+output: pdf_document
+---
+
+# Insurance status predicts antiemetic use 
+We investigate the Hypothesis that insurance status predicets antiemetic use the population in the Public Use File of the Anestehsia Quality Institute with electronic anesthesia records recording antiemetic use.
+
+
+
+```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
+library(knitr) # required to set options in Markdown R
+# library(lme4)
+# library(nlme)
+```
+
+
+
+```{r, global_options, echo=FALSE}
+
+# set the directory to the project directory
+setwd("C:/Users/Micheal/Dropbox/Professional/AQI/AQI_RegressionAnalysis")
+
+# set options
+opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
+               echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+## Load cleaned dataset *fullAQI_4_14* and *prov1_AQI_4_14*
+ 
+we load the cleaned larger dataset without and with provider information *fullAQI_4_14.Rdata*, *prov1_AQI_4_14*, which we generated in *import_AQI_14Jul2015.Rmd*   
+
+
+```{r, echo=TRUE}
+rm(list = ls())
+load("Analysis/Data/fullAQI_4_14.Rdata")
+load("Analysis/Data/prov1_AQI_4_14.Rdata")
+str(fullAQI_4_14)
+str(prov1_AQI_4_14)
+
+```
+
+## Logistic Regression
+
+```{r}
+library(lme4)
+```
+
+### Logistic Model 1  Link: logit
+
+We first fit a logistic regression model with the a **logit** link, saved in *LogisticRegression_AQIFixedEfffects_LogitLink* as shown below:
+
+
+```{r, echo=TRUE,eval=FALSE}
+formula <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice  
+
+fit_logistic <- glm(formula, 
+                   family = binomial(link = "logit"), 
+                   data = fullAQI_4_14)
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+p_values <- summary.glm((fit_logistic))$coefficient[,4]
+
+OR <- exp(coef(fit_logistic)) # exponentiated coefficients
+CI_fitlogistic<- confint(fit_logistic) # 95% CI for the coefficients
+
+kable(data.frame(OR, p_values), digits = 3)
+
+#summary(fit_logistic) # display results
+#exp(confint(fit_logistic)) # 95% CI for exponentiated coefficients
+#predict(fit_logistic, type="response") # predicted values
+#residuals(fit_logistic, type="deviance") # residuals
+```
+
+Summary:
+Controlling for age, sex, facilty and case duration, antiemetic administration is strongly associated with insurance status as a marker of SES, but the OR is not as strong as previously estimated controlling for fewer variables. it makes sense that controlling for likely confounders like anesthesia type and ASA status reduces the effect estimate. 
+
+
+### Logistic Model 2 Link : log
+
+We try to fit a logistic regression model with the a **log** link.
+
+
+```{r, echo=TRUE}
+
+formula <- ond ~ pay +age_group +sex  +duration 
+
+fit_logistic <- glm(formula, 
+                   family = binomial(link = "log"), 
+                   data = fullAQI_4_14)
+```
+
+```{r, echo=FALSE}
+p_values <- summary.glm((fit_logistic))$coefficient[,4]
+OR <- exp(coef(fit_logistic)) # exponentiated coefficients
+CI_fitlogistic<- confint(fit_logistic) # 95% CI for the coefficients
+kable(data.frame(OR, exp(CI_fitlogistic), 
+                 p_values), digits = 3)
+```
+
+Summary: We are unable to fit a log link model with all predictors, because we get the error message:
+
+*Error: no valid set of coefficients has been found: please supply starting values*
+
+If we use more predictors that these:
+`r print(formula)`
+
