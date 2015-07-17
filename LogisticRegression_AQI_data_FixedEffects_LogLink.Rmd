@@ -56,7 +56,7 @@ We first fit a logistic regression model with the a **logit** link, saved in *Lo
 ```{r, echo=TRUE,eval=FALSE}
 formula <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice  
 
-fit_logistic <- glm(formula, 
+fit_logit <- glm(formula, 
                    family = binomial(link = "logit"), 
                    data = fullAQI_4_14)
 ```
@@ -70,7 +70,7 @@ CI_fitlogistic<- confint(fit_logistic) # 95% CI for the coefficients
 
 kable(data.frame(OR, p_values), digits = 3)
 
-#summary(fit_logistic) # display results
+#summary(fit_logit) # display results
 #exp(confint(fit_logistic)) # 95% CI for exponentiated coefficients
 #predict(fit_logistic, type="response") # predicted values
 #residuals(fit_logistic, type="deviance") # residuals
@@ -84,28 +84,45 @@ Controlling for age, sex, facilty and case duration, antiemetic administration i
 
 We try to fit a logistic regression model with the a **log** link.
 
-
-```{r, echo=TRUE}
-
-formula <- ond ~ pay +age_group +sex  +duration 
-
-fit_logistic <- glm(formula, 
-                   family = binomial(link = "log"), 
-                   data = fullAQI_4_14)
-```
-
-```{r, echo=FALSE}
-p_values <- summary.glm((fit_logistic))$coefficient[,4]
-OR <- exp(coef(fit_logistic)) # exponentiated coefficients
-CI_fitlogistic<- confint(fit_logistic) # 95% CI for the coefficients
-kable(data.frame(OR, exp(CI_fitlogistic), 
-                 p_values), digits = 3)
-```
-
-Summary: We are unable to fit a log link model with all predictors, because we get the error message:
+##### Problem: 
+We are unable to fit a log link model with all predictors, because we get the error message:
 
 *Error: no valid set of coefficients has been found: please supply starting values*
 
-If we use more predictors that these:
-`r print(formula)`
+if we use more predictors than a few predictors. Two solutions:
+
+* supply starting values for all coefficients, (factors need one for each level)
+* consider using the package *biglm*, specifically for log link with large data set
+
+### Starting values for log link glm
+
+Estimate fit with **one less** predictor:
+
+```{r, echo=TRUE}
+
+formula0 <- ond ~ pay +age_group +sex
+
+fit_log0 <- glm(formula0, 
+             family = binomial(link = "log"), 
+             data = fullAQI_4_14)
+```
+
+Use estimated coefficients as **starting values** for model with one additional predictor. Starting values for additional predictors are set to zero.
+
+```{r}
+formula <- ond ~ pay +age_group +sex +ASA # one additonal predictor ASA
+
+fit_log <- glm(formula, 
+             family = binomial(link = "log"), 
+             data = fullAQI_4_14, start = c(coef(fit_log0),rep(0,5) ))
+# start = c( coef(fit_log0), rep(0,5) ) ### For each level of ASA one start value!
+```
+
+```{r}
+p_values <- summary.glm((fit_log))$coefficient[,4]
+OR <- exp(coef(fit_log)) # exponentiated coefficients
+CI_fitlog<- confint(fit_log) # 95% CI for the coefficients
+kable(data.frame(OR, exp(CI_fitlog), 
+                 p_values), digits = 3)
+```
 
