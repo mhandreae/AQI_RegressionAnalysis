@@ -144,3 +144,15 @@ Error message:
   unable to evaluate scaled gradient
 2: In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
   Model failed to converge: degenerate  Hessian with 1 negative eigenvalues*
+
+```{r}
+formula <- ond ~  pay  +(1+ pay|provider)
+# fit_random <- glmer(formula, 
+#                     data = prov1_AQI_4_14, 
+#                     family = binomial)
+```
+
+Error message:
+*Warning message:
+In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
+  Model failed to converge with max|grad| = 0.00116735 (tol = 0.001, component 1)*
