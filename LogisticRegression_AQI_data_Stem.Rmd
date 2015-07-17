@@ -12,8 +12,8 @@ We investigate the Hypothesis that insurance status predicets antiemetic use the
 
 ```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
 library(knitr) # required to set options in Markdown R
-library(lme4)
-library(nlme)
+# library(lme4)
+# library(nlme)
 ```
 
 
@@ -28,9 +28,9 @@ opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
                echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
-## Load cleaned dataset *myAQI_4_14.Rdata* 
+## Load cleaned dataset *fullAQI_4_14* and *prov1_AQI_4_14*
  
-we load the cleaned larger dataset without provider information *fullAQI_4_14.Rdata*, which we generated in *import_AQI_14Jul2015.Rmd*   
+we load the cleaned larger dataset without and with provider information *fullAQI_4_14.Rdata*, *prov1_AQI_4_14*, which we generated in *import_AQI_14Jul2015.Rmd*   
 
 
 ```{r, echo=TRUE}

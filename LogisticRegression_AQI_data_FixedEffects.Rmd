@@ -12,8 +12,8 @@ We investigate the Hypothesis that insurance status predicets antiemetic use the
 
 ```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
 library(knitr) # required to set options in Markdown R
-library(lme4)
-library(nlme)
+# library(lme4)
+# library(nlme)
 ```
 
 
@@ -28,9 +28,9 @@ opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
                echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
-## Load cleaned dataset *myAQI_4_14.Rdata* 
+## Load cleaned dataset *fullAQI_4_14* and *prov1_AQI_4_14*
  
-we load the cleaned larger dataset without provider information *fullAQI_4_14.Rdata*, which we generated in *import_AQI_14Jul2015.Rmd*   
+we load the cleaned larger dataset without and with provider information *fullAQI_4_14.Rdata*, *prov1_AQI_4_14*, which we generated in *import_AQI_14Jul2015.Rmd*   
 
 
 ```{r, echo=TRUE}
@@ -43,6 +43,10 @@ str(prov1_AQI_4_14)
 ```
 
 ## Logistic Regression
+
+```{r}
+library(lme4)
+```
 
 ### Logistic Model 1  Link: logit
 
@@ -105,55 +109,3 @@ p_values <- summary.glm((fit_logistic))$coefficient[,4]
 OR <- exp(coef(fit_logistic)) # exponentiated coefficients
 kable(data.frame(OR, p_values), digits = 3)
 ```
-
-## Logistig Model 3 with random effects provider 
-
-We try to add **providers** as random effects and fit a logistic regression model with the a logit link again using the package *lme4*
-
-Only a very simple model converges so far:
-
-```{r, echo=TRUE}
-formula <- ond ~  pay  +(1|provider)
-
-fit_random <- glmer(formula, 
-                    data = prov1_AQI_4_14, 
-                    family = binomial, 
-                    control = glmerControl(optimizer = "bobyqa"), 
-                    nAGQ = 10)
-```
-
-```{r, echo=FALSE}
-print(fit_random, corr=FALSE)
-```
-
-The more complex random effects model fails to converge:
-
-```{r, echo=TRUE}
-formula <- ond ~ 
-  pay +age_group +sex +ASA +anes_type +duration +practice +(1|provider)
-
-# fit_random <- glmer(formula, 
-#                     data = prov1_AQI_4_14, 
-#                     family = binomial, 
-#                     control = glmerControl(optimizer = "bobyqa"), 
-#                     nAGQ = 10)
-```
-
-Error message:
-*Warning messages:
-1: In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
-  unable to evaluate scaled gradient
-2: In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
-  Model failed to converge: degenerate  Hessian with 1 negative eigenvalues*
-
-```{r}
-formula <- ond ~  pay  +(1+ pay|provider)
-# fit_random <- glmer(formula, 
-#                     data = prov1_AQI_4_14, 
-#                     family = binomial)
-```
-
-Error message:
-*Warning message:
-In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
-  Model failed to converge with max|grad| = 0.00116735 (tol = 0.001, component 1)*
