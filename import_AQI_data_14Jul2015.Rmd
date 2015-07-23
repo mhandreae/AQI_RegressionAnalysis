@@ -50,6 +50,7 @@ load("Analysis/Data/PUF_Q4_2013.Rdata")
 
 ```{r}
 summary(PUF_Q4_2013$Income_MedianR)
+hist(PUF_Q4_2013$Income_MedianR)
 n_Income_MedianRNA <-sum(is.na(PUF_Q4_2013$Income_MedianR))
 ```
 
@@ -177,7 +178,8 @@ We recode the practices to A through D to prevent reidentification.
 
 ```{r, echo=TRUE}
 PUF_Q4_2013$case_duration_minutes [PUF_Q4_2013$case_duration_minutes == -1] <- NA
-missing <- sum(PUF_Q4_2013$case_duration_minutes==-1)
+missing <- sum(is.na(PUF_Q4_2013$case_duration_minutes))
+hist(PUF_Q4_2013$case_duration_minutes)
 PUF_Q4_2013 <- PUF_Q4_2013 [complete.cases(PUF_Q4_2013$case_duration_minutes),]
 ```
 
@@ -513,7 +515,8 @@ We recode the practices to A through B to prevent reidentification.
 
 ```{r, echo=TRUE}
 PUF_Q4_2013$case_duration_minutes [PUF_Q4_2013$case_duration_minutes == -1] <- NA
-missing <- sum(PUF_Q4_2013$case_duration_minutes==-1)
+missing <- sum(is.na(PUF_Q4_2013$case_duration_minutes))
+hist(PUF_Q4_2013$case_duration_minutes)
 PUF_Q4_2013 <- PUF_Q4_2013 [complete.cases(PUF_Q4_2013$case_duration_minutes),]
 ```
 
@@ -689,58 +692,30 @@ It would be great to control for individual provider behavior, to show variabili
 
 ## Save cleaned datasets
 
-## Larger dataset **without** provider information in *fullAQI_4_14*
-
-a clean dataframe without provider info but more unique cases is saved as *fullAQI_4_14.Rdata* 
-
-```{r, eval=FALSE}
-
-attach(PUF_Q4_2013)
-fullAQI_4_14 <- data.frame(ond= ondansetron,
-                         dex= dexamethason,
-                         drop= droperidol,
-                         any = ondan_dex_either,
-                         pay = Payment, 
-                         age = patient_age, 
-                         age_group = patient_age_group, 
-                         sex = patient_sex,
-                         ASA = asaps,
-                         duration = case_duration_minutes,
-                         anes_type = primary_anesthesia_type,
-                         practice = practice)
-
-# all NA are already removed in the previous chunks
-
-save (fullAQI_4_14, file="Analysis/Data/fullAQI_4_14.Rdata")
-str(fullAQI_4_14)
-```
-
-## Smaller dataset **with** provider information in *prov1_AQI_4_14*
-
-a more limited dataset with the individual provider as predictor is saved (after removing cases with *prov1* NA) in *prov1_AQI_4_14.Rdata*
+a dataset with the *Income_MedicanR* and individual provider as predictor is saved (after removing cases with *prov1* NA) in *prov1_Income_AQI_4_14.Rdata*
 
 
-```{r, eval=FALSE}
+```{r}
 # Remove cases with *prov* NA
 PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$prov1),]
 
 attach(PUF_Q4_2013)
-prov1_AQI_4_14 <- data.frame(ond= ondansetron,
+prov1_Income_AQI_4_14 <- data.frame(ond= ondansetron,
                          dex= dexamethason,
                          drop= droperidol,
                          any = ondan_dex_either,
-                         pay = Payment, 
+                         inc =Income_MedianR,
                          age = patient_age, 
                          age_group = patient_age_group, 
                          sex = patient_sex,
                          ASA = asaps,
                          duration = case_duration_minutes,
                          anes_type = primary_anesthesia_type,
-                         provider = prov1,
+                         prov = prov1,
                          practice = practice)
 
 # all NA are already removed in the previous chunks
 
-save (prov1_AQI_4_14, file="Analysis/Data/prov1_AQI_4_14.Rdata")
-str(prov1_AQI_4_14)
+save (prov1_Income_AQI_4_14, file="Analysis/Data/prov1_Income_AQI_4_14.Rdata")
+str(prov1_Income_AQI_4_14)
 ```
