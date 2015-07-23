@@ -6,14 +6,13 @@ output: pdf_document
 ---
 
 # Insurance status predicts antiemetic use 
-We investigate the Hypothesis that insurance status predicets antiemetic use the population in the Public Use File of the Anestehsia Quality Institute with electronic anesthesia records recording antiemetic use.
+We investigate the Hypothesis that socioeconomic status (**SES**) predicts anesthesia quality.
 
-
+We use either insurance status or median income in patient address zip code as markers of socioeconomic status and  antiemetic use as marker of anesthesia quailty. We use the population in the Public Use File *NACOR*, the National Anesthesia Clinical Outcome Registry, of the Anesthesia Quality Institute *AQI* with electronic anesthesia records recording antiemetic use.
 
 ```{r, packages, message=FALSE, echo=FALSE, warning=FALSE}
 library(knitr) # required to set options in Markdown R
 ```
-
 
 
 ```{r, global_options, echo=FALSE}
@@ -45,14 +44,62 @@ rm(list = ls())
 load("Analysis/Data/PUF_Q4_2013.Rdata")
 ```
 
-# Clean Data
+# Generate Clean Data Files
 
-## Predictor: insurance status
+## Median income versus insurance status as predictors of socioeconomic status
 
+### Median income
+
+```{r}
+summary(PUF_Q4_2013$Income_MedianR)
+n_Income_MedianRNA <-sum(is.na(PUF_Q4_2013$Income_MedianR))
+```
+
+A predictor of socioeconomic status could be the median income in the zip code of the patients home address, coded *Income_MedicanR* , a `r class(PUF_Q4_2013$Income_MedianR)` with `r n_Income_MedianRNA` NA values. We will generate a separate file with median income as predictor at the bottom. 
+
+
+### Insurance status
 
 ```{r}
 PUF_Q4_2013$Payment[PUF_Q4_2013$Payment == ""] <- NA
 n_PaymentNA <-sum(is.na(PUF_Q4_2013$Payment))
+
+PUF_Q4_2013$Payment <- droplevels(PUF_Q4_2013$Payment)
+levels(PUF_Q4_2013$Payment)[1] <- "Commercial"
+```
+
+The predictor insurance status (*Payment*) is coded in `r length(levels(PUF_Q4_2013$Payment))` levels as `r levels(PUF_Q4_2013$Payment)`, and has `r n_PaymentNA` cases with without insurance information, *NA*
+
+### Missing data on insurance status and median income
+
+```{r}
+PUF_Q4_2013$Payment[PUF_Q4_2013$Payment == ""] <- NA
+OverlapPayment_Income_MedianR <- table(is.na(PUF_Q4_2013$Payment),
+                                       is.na(PUF_Q4_2013$Income_MedianR))
+colnames(OverlapPayment_Income_MedianR) <- c("Observed Income", "NA")
+rownames(OverlapPayment_Income_MedianR) <- c("Observed Insurance", "NA")
+
+kable(OverlapPayment_Income_MedianR)
+```
+
+There is considerable overlap in the missingness of information on *Income_MedicanR* and insurance status coded as *Payment*. In other words, data are missing in different subpopulatons for *Income_MedianR* and *Payment*. This makes it feasible to test our hypothesis in two different subsets of the NACOR database
+
+* The population with complete data on median income at patient address, using *Income_MedianR* as predictor for poor healthcare quality. 
+
+* The population with complete data on insurance status, using insurance status coded as *Payment* as predictor for poor healthcare quality. 
+
+**Summary:**
+We generate several clean data files.
+The first set of files uses insurance status as predictor;
+the second set of files uses median income (in patient address zip code) as predictor.
+
+
+## Predictor: insurance status
+
+We generate the first set of files; We limit the analysis on the complete cases with *Payment* information on insurance status.
+
+```{r}
+
 
 PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$Payment),]
 
@@ -61,7 +108,6 @@ levels(PUF_Q4_2013$Payment)[1] <- "Commercial"
 ```
 
 The predictor insurance status (*Payment*) is coded in `r length(levels(PUF_Q4_2013$Payment))` levels as `r levels(PUF_Q4_2013$Payment)`, after we removed `r n_PaymentNA` cases without insurance information, (orginally coded as ""), with `r length(PUF_Q4_2013$Payment)` unique cases remaining.
-(False indicating no NAs in Payment: `r anyNA(PUF_Q4_2013$Payment)`)
 
 ## Outcome variables: antiemetic administration
 
