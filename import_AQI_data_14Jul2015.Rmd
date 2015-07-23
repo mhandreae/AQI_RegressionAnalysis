@@ -47,47 +47,21 @@ load("Analysis/Data/PUF_Q4_2013.Rdata")
 
 # Clean Data
 
-## Predictor: 
-
-### Insurance status
+## Predictor: insurance status
 
 
 ```{r}
 PUF_Q4_2013$Payment[PUF_Q4_2013$Payment == ""] <- NA
 n_PaymentNA <-sum(is.na(PUF_Q4_2013$Payment))
-OverlapPayment_Income_MedianR <- table(is.na(PUF_Q4_2013$Payment),
-                                       is.na(PUF_Q4_2013$Income_MedianR))
+
+PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$Payment),]
 
 PUF_Q4_2013$Payment <- droplevels(PUF_Q4_2013$Payment)
 levels(PUF_Q4_2013$Payment)[1] <- "Commercial"
 ```
 
 The predictor insurance status (*Payment*) is coded in `r length(levels(PUF_Q4_2013$Payment))` levels as `r levels(PUF_Q4_2013$Payment)`, after we removed `r n_PaymentNA` cases without insurance information, (orginally coded as ""), with `r length(PUF_Q4_2013$Payment)` unique cases remaining.
-
-
-### Median Income
-
-```{r}
-summary(PUF_Q4_2013$Income_MedianR)
-n_Income_MedianRNA <-sum(is.na(PUF_Q4_2013$Income_MedianR))
-```
-
-An alternative predictor could be the median income in the zip code of the patients home address *Income_MedicanR* , a `r class(PUF_Q4_2013$Income_MedianR)` with `r n_Income_MedianRNA` NA values. We will generate a separate file with median income as predictor at the bottom. 
-
-There is considerable overlap in the missingness. In other words, data are missing in different subpopulatons for *Income_MedianR* and *Payment*. This makes it feasible to test our hypothesis in this population with complete data on median income at patient address, using *Income_MedianR* as predictor for poor healthcare quality. 
-
-```{r}
-colnames(OverlapPayment_Income_MedianR) <- c("Observed Income", "NA")
-rownames(OverlapPayment_Income_MedianR) <- c("Observed Insurance", "NA")
-
-kable(OverlapPayment_Income_MedianR)
-```
-
-We limit the analysis on the complete cases with *Payment* information on insurance status.
-
-````{r, echo=TRUE}
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$Payment),]
-```
+(False indicating no NAs in Payment: `r anyNA(PUF_Q4_2013$Payment)`)
 
 ## Outcome variables: antiemetic administration
 
@@ -407,45 +381,3 @@ prov1_AQI_4_14 <- data.frame(ond= ondansetron,
 save (prov1_AQI_4_14, file="Analysis/Data/prov1_AQI_4_14.Rdata")
 str(prov1_AQI_4_14)
 ```
-
-## Medican Income Dataset
-
-An alternative predictor could be the median income in the zip code of the patients home address *Income_MedicanR* , a `r class(PUF_Q4_2013$Income_MedianR)` with `r n_Income_MedianRNA` NA values. We generate a separate file with median income as predictor, but only two practices are contributing to this data.
-
-```{r}
-# Limit to cases with *IncomeMedianR* observed
-
-rm(list = ls())
-load("Analysis/Data/PUF_Q4_2013.Rdata")
-
-
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$Income_MedianR),]
-PUF_Q4_2013 <- PUF_Q4_2013 [complete.cases(PUF_Q4_2013$case_duration_minutes),]
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$patient_age_group),]
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$patient_sex),]
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$primary_anesthesia_type),]
-PUF_Q4_2013 <- PUF_Q4_2013[complete.cases(PUF_Q4_2013$prov1),]
-
-
-
-attach(PUF_Q4_2013)
-prov1_AQI_4_14 <- data.frame(ond= ondansetron,
-                         dex= dexamethason,
-                         drop= droperidol,
-                         any = ondan_dex_either,
-                         inc = IncomeMedianR, 
-                         age = patient_age, 
-                         age_group = patient_age_group, 
-                         sex = patient_sex,
-                         ASA = asaps,
-                         duration = case_duration_minutes,
-                         anes_type = primary_anesthesia_type,
-                         provider = prov1,
-                         practice = practice)
-
-# all NA are already removed in the previous chunks
-
-save (prov1_AQI_4_14, file="Analysis/Data/prov1_AQI_4_14.Rdata")
-str(prov1_AQI_4_14)
-```
-
