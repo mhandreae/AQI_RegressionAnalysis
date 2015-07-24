@@ -1,7 +1,7 @@
 ---
 title: "LogLink Logistic regression AQI data"
 author: "Michael Andreae"
-date: "July, 14, 2015"
+date: "July, 24, 2015"
 output: pdf_document
 ---
 
@@ -33,7 +33,7 @@ opts_chunk$set(fig.width=6, fig.height=4, fig.path='Figs/',
 we load the cleaned larger dataset without and with provider information *fullAQI_4_14.Rdata*, *prov1_AQI_4_14*, which we generated in *import_AQI_14Jul2015.Rmd*   
 
 
-```{r, echo=TRUE}
+```{r, load_clean_dataset, echo=TRUE}
 rm(list = ls())
 load("Analysis/Data/fullAQI_4_14.Rdata")
 load("Analysis/Data/prov1_AQI_4_14.Rdata")
@@ -42,49 +42,13 @@ str(prov1_AQI_4_14)
 
 ```
 
-## Logistic Regression
+## Logistic Model 2 Link : log with glm
 
-```{r}
-library(lme4)
-```
+We try to fit a logistic regression model with the a **log** link with the 
 
-### Logistic Model 1  Link: logit
-
-We first fit a logistic regression model with the a **logit** link, saved in *LogisticRegression_AQIFixedEfffects_LogitLink* as shown below:
-
-
-```{r, echo=TRUE,eval=FALSE}
 formula <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice  
 
-fit_logit <- glm(formula, 
-                   family = binomial(link = "logit"), 
-                   data = fullAQI_4_14)
-```
-
-
-```{r, echo=FALSE, eval=FALSE}
-p_values <- summary.glm((fit_logistic))$coefficient[,4]
-
-OR <- exp(coef(fit_logistic)) # exponentiated coefficients
-CI_fitlogistic<- confint(fit_logistic) # 95% CI for the coefficients
-
-kable(data.frame(OR, p_values), digits = 3)
-
-#summary(fit_logit) # display results
-#exp(confint(fit_logistic)) # 95% CI for exponentiated coefficients
-#predict(fit_logistic, type="response") # predicted values
-#residuals(fit_logistic, type="deviance") # residuals
-```
-
-Summary:
-Controlling for age, sex, facilty and case duration, antiemetic administration is strongly associated with insurance status as a marker of SES, but the OR is not as strong as previously estimated controlling for fewer variables. it makes sense that controlling for likely confounders like anesthesia type and ASA status reduces the effect estimate. 
-
-
-### Logistic Model 2 Link : log
-
-We try to fit a logistic regression model with the a **log** link.
-
-##### Problem: 
+### Problem: 
 We are unable to fit a log link model with all predictors, because we get the error message:
 
 *Error: no valid set of coefficients has been found: please supply starting values*
@@ -94,11 +58,15 @@ if we use more predictors than a few predictors. Two solutions:
 * supply starting values for all coefficients, (factors need one for each level)
 * consider using the package *biglm*, specifically for log link with large data set
 
-### Starting values for log link glm
+## Building Loglink with starting values 
 
-Estimate fit with **one less** predictor:
+Use estimated coefficients as **starting values** for increasingly complex model with one additional predictor per step. Starting values for additional predictors are set to zero.
 
-```{r, echo=TRUE}
+### Estimate fit_log0 with **four** predictors: 
+
+formula0 <- ond ~ pay +age_group +sex
+
+```{r, log0, echo=TRUE}
 
 formula0 <- ond ~ pay +age_group +sex
 
@@ -107,18 +75,93 @@ fit_log0 <- glm(formula0,
              data = fullAQI_4_14)
 ```
 
-Use estimated coefficients as **starting values** for model with one additional predictor. Starting values for additional predictors are set to zero.
 
-```{r}
-formula <- ond ~ pay +age_group +sex +ASA # one additonal predictor ASA
+```{r log0_results, eval=TRUE}
+p_values <- summary.glm((fit_log0))$coefficient[,4]
+OR <- exp(coef(fit_log0)) # exponentiated coefficients 
+# CI_fitlog<- confint(fit_log) # 95% CI for the coefficients, takes too long
+kable(data.frame(OR, p_values), digits = 3, caption = "Results log0")
+```
 
-fit_log <- glm(formula, 
+### Estimate fit_log1 with **five** predictors: 
+
+formula1 <- ond ~ pay +age_group +sex +ASA
+
+```{r, log1, echo=TRUE}
+formula1 <- ond ~ pay +age_group +sex +ASA # one additonal predictor ASA
+
+fit_log1 <- glm(formula1, 
              family = binomial(link = "log"), 
              data = fullAQI_4_14, start = c(coef(fit_log0),rep(0,5) ))
 # start = c( coef(fit_log0), rep(0,5) ) ### For each level of ASA one start value!
 ```
 
-```{r}
+```{r log1_results, eval=TRUE}
+p_values <- summary.glm((fit_log1))$coefficient[,4]
+OR <- exp(coef(fit_log1)) # exponentiated coefficients 
+# CI_fitlog<- confint(fit_log) # 95% CI for the coefficients, takes too long
+kable(data.frame(OR, p_values), digits = 3 , caption = "Results log1")
+```
+
+### Estimate fit_log2 with **six** predictors: 
+
+formula2 <- ond ~ pay +age_group +sex +ASA +anes_type 
+
+```{r, log2, echo=TRUE}
+formula2 <- ond ~ pay +age_group +sex +ASA +anes_type 
+
+fit_log2 <- glm(formula2, 
+             family = binomial(link = "log"), 
+             data = fullAQI_4_14, start = c(coef(fit_log1),rep(0,5) ))
+```
+
+```{r log2_results, eval=TRUE}
+p_values <- summary.glm((fit_log2))$coefficient[,4]
+OR <- exp(coef(fit_log2)) # exponentiated coefficients 
+# CI_fitlog<- confint(fit_log) # 95% CI for the coefficients, takes too long
+kable(data.frame(OR, p_values), digits = 3, , caption = "Results log2")
+```
+
+### Estimate fit_log3 with **seven** predictors: 
+
+formula3 <- ond ~ pay +age_group +sex +ASA +anes_type +duration
+
+```{r, log3, echo=TRUE}
+formula3 <- ond ~ pay +age_group +sex +ASA +anes_type +duration
+
+fit_log3 <- glm(formula3, 
+             family = binomial(link = "log"), 
+             data = fullAQI_4_14, start = c(coef(fit_log2),rep(0,1) ))
+```
+
+```{r log3_results, eval=TRUE}
+p_values <- summary.glm((fit_log3))$coefficient[,4]
+OR <- exp(coef(fit_log3)) # exponentiated coefficients 
+# CI_fitlog<- confint(fit_log) # 95% CI for the coefficients, takes too long
+kable(data.frame(OR, p_values), digits = 3, caption = "Results log3")
+```
+
+### Estimate fit_log4 with **seven** predictors: 
+
+formula4 <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice
+
+```{r, log4, echo=TRUE, eval=FALSE}
+formula4 <- ond ~ pay +age_group +sex +ASA +anes_type +duration +practice
+
+fit_log4 <- glm(formula4, 
+             family = binomial(link = "log"), 
+             data = fullAQI_4_14, start = c(coef(fit_log3), rep (0,3) ) )
+```
+
+**Non convergence**
+*Warning messages:
+1: step size truncated due to divergence 
+2: step size truncated due to divergence 
+3: step size truncated due to divergence 
+4: step size truncated due to divergence 
+5: glm.fit: algorithm did not converge*
+
+```{r eval=FALSE}
 p_values <- summary.glm((fit_log))$coefficient[,4]
 OR <- exp(coef(fit_log)) # exponentiated coefficients
 CI_fitlog<- confint(fit_log) # 95% CI for the coefficients
